@@ -1,0 +1,6 @@
+{
+  "name": "Digital Lineage",
+  "description": "A beautiful corporate-tactile family tree, archival records platform, and AI-powered document transcription hub for multi-generational history conservation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

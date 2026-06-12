@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&display=swap');
+
+@theme {
+  --font-serif: "Source Serif 4", Georgia, ui-serif, serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-primary: #006591;
+  --color-primary-container: #0ea5e9;
+  --color-on-primary-container: #003751;
+  --color-secondary: #506447;
+  --color-secondary-container: #d0e7c2;
+  --color-on-secondary-container: #54684b;
+  --color-tertiary: #6b5b50;
+  --color-tertiary-container: #ab988b;
+  --color-background: #fbf9f4;
+  --color-surface-container: #f0eee9;
+  --color-surface-container-high: #eae8e3;
+  --color-surface-container-highest: #e4e2dd;
+  --color-on-surface: #1b1c19;
+  --color-outline: #bec8d2;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-on-surface);
+}
+
+h1, h2, h3, h4, .font-serif-header {
+  font-family: var(--font-serif);
+}
+
+/* Custom styles for organic connecting lines in My Tree */
+.tree-line-horizontal {
+  border-top-width: 2px;
+  border-color: #6b5b50;
+  opacity: 0.35;
+}
+
+.tree-line-vertical {
+  border-left-width: 2px;
+  border-color: #6b5b50;
+  opacity: 0.35;
+}
+
