@@ -23,6 +23,7 @@ export interface TimelineEvent {
 
 export interface Person {
   id: string;
+  userId?: string;
   firstName: string;
   lastName: string;
   maidenName?: string;

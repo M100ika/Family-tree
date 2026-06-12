@@ -4,52 +4,65 @@
  */
 
 import React, { useState } from "react";
-import { BookOpen, AlertCircle, Sparkles, Mail, Lock, ShieldCheck } from "lucide-react";
-import { ActiveSession } from "../types";
+import { BookOpen, AlertCircle, Mail, Lock, ShieldCheck, CheckCircle } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { supabase } from "../lib/supabase";
 
 interface LoginPageProps {
-  onLoginSuccess: (email: string) => void;
   onClose: () => void;
 }
 
-export default function LoginPage({ onLoginSuccess, onClose }: LoginPageProps) {
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+export default function LoginPage({ onClose }: LoginPageProps) {
+  const { signIn, signUp } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSignUp, setIsSignUp]     = useState(false);
+  const [email, setEmail]           = useState("");
+  const [password, setPassword]     = useState("");
+  const [fullName, setFullName]     = useState("");
+  const [error, setError]           = useState("");
+  const [success, setSuccess]       = useState("");
+  const [isLoading, setIsLoading]   = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      setError("Please fill in all layout fields.");
+      setError("Please fill in all fields.");
       return;
     }
     setError("");
+    setSuccess("");
     setIsLoading(true);
 
-    // Simulate login persistence
-    setTimeout(() => {
+    if (isSignUp) {
+      const { error: err } = await signUp(email, password, fullName);
       setIsLoading(false);
-      onLoginSuccess(email);
-    }, 800);
+      if (err) {
+        setError(err);
+      } else {
+        setSuccess("Account created! Check your email to confirm, then sign in.");
+        setIsSignUp(false);
+        setPassword("");
+      }
+    } else {
+      const { error: err } = await signIn(email, password);
+      setIsLoading(false);
+      if (err) {
+        setError(err);
+      }
+      // On success, App.tsx detects auth state change automatically
+    }
   };
 
   return (
     <div className="min-h-[85vh] bg-surface flex items-center justify-center p-4 md:p-8" id="login-screen-root">
       <div className="max-w-6xl w-full bg-[#fbf9f4] shadow-xl rounded-2xl overflow-hidden border border-[#eae8e3] grid md:grid-cols-12 min-h-[680px]">
-        
+
         {/* Left Side: Illustrative Legacy Banner */}
         <div className="relative md:col-span-5 bg-[#30312e] text-white p-8 flex flex-col justify-between overflow-hidden">
-          {/* Faux Background Overlay using an elegant historical library image */}
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center mix-blend-overlay opacity-35"
-            style={{ 
-              backgroundImage: `url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&q=80&w=1000')` 
-            }}
+            style={{ backgroundImage: `url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&q=80&w=1000')` }}
           />
-          
-          {/* Decorative radial lighting representing warm lamp illumination */}
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-amber-400/20 blur-3xl rounded-full pointer-events-none" />
 
           <div className="relative z-10 flex items-center gap-2">
@@ -75,8 +88,7 @@ export default function LoginPage({ onLoginSuccess, onClose }: LoginPageProps) {
         {/* Right Side: Sign In / Create Account Controls */}
         <div className="md:col-span-7 p-8 md:p-12 flex flex-col justify-center bg-white">
           <div className="max-w-md w-full mx-auto">
-            
-            {/* Header logo / titles */}
+
             <div className="mb-8 text-center md:text-left">
               <div className="text-xs font-semibold tracking-wider text-tertiary uppercase mb-1">Heritage Hearth Portal</div>
               <h2 className="font-serif text-3xl font-extrabold text-tertiary">
@@ -87,27 +99,23 @@ export default function LoginPage({ onLoginSuccess, onClose }: LoginPageProps) {
               </p>
             </div>
 
-            {/* Selection Tabs */}
+            {/* Tabs */}
             <div className="flex border-b border-[#eae8e3] p-0.5 gap-2 mb-6" id="auth-tabs">
               <button
                 type="button"
                 className={`flex-1 py-2.5 text-center font-sans text-sm font-semibold border-b-2 transition-all duration-200 ${
-                  !isSignUp 
-                    ? "border-primary text-primary" 
-                    : "border-transparent text-gray-400 hover:text-gray-600"
+                  !isSignUp ? "border-primary text-primary" : "border-transparent text-gray-400 hover:text-gray-600"
                 }`}
-                onClick={() => { setIsSignUp(false); setError(""); }}
+                onClick={() => { setIsSignUp(false); setError(""); setSuccess(""); }}
               >
                 Sign In
               </button>
               <button
                 type="button"
                 className={`flex-1 py-2.5 text-center font-sans text-sm font-semibold border-b-2 transition-all duration-200 ${
-                  isSignUp 
-                    ? "border-primary text-primary" 
-                    : "border-transparent text-gray-400 hover:text-gray-600"
+                  isSignUp ? "border-primary text-primary" : "border-transparent text-gray-400 hover:text-gray-600"
                 }`}
-                onClick={() => { setIsSignUp(true); setError(""); }}
+                onClick={() => { setIsSignUp(true); setError(""); setSuccess(""); }}
               >
                 Create Account
               </button>
@@ -120,8 +128,29 @@ export default function LoginPage({ onLoginSuccess, onClose }: LoginPageProps) {
               </div>
             )}
 
-            {/* Standard Login Form */}
+            {success && (
+              <div className="mb-4 p-3 bg-green-50 border-l-4 border-green-500 text-green-700 text-xs flex items-center gap-2 rounded">
+                <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{success}</span>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
+              {isSignUp && (
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="e.g. James Harrison"
+                    className="w-full px-4 py-2.5 bg-[#fbf9f4] border-2 border-[#eae8e3] rounded-lg text-sm text-gray-800 focus:outline-none focus:border-primary transition"
+                  />
+                </div>
+              )}
+
               <div>
                 <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">
                   Email Address
@@ -145,9 +174,18 @@ export default function LoginPage({ onLoginSuccess, onClose }: LoginPageProps) {
                     Password
                   </label>
                   {!isSignUp && (
-                    <a href="#reset" className="text-xs text-primary font-medium hover:underline">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!email) { setError("Enter your email first."); return; }
+                        const { error } = await supabase.auth.resetPasswordForEmail(email);
+                        if (error) setError(error.message);
+                        else setSuccess("Password reset email sent!");
+                      }}
+                      className="text-xs text-primary font-medium hover:underline"
+                    >
                       Forgot Password?
-                    </a>
+                    </button>
                   )}
                 </div>
                 <div className="relative">
@@ -155,6 +193,7 @@ export default function LoginPage({ onLoginSuccess, onClose }: LoginPageProps) {
                   <input
                     type="password"
                     required
+                    minLength={6}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
@@ -176,46 +215,13 @@ export default function LoginPage({ onLoginSuccess, onClose }: LoginPageProps) {
               </button>
             </form>
 
-            {/* Social SSO path */}
-            <div className="relative my-6 text-center">
-              <span className="absolute inset-x-0 top-3 border-b border-gray-200" />
-              <span className="relative z-10 px-3 bg-white text-xs text-gray-400 font-medium">Or continue with</span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              <button
-                type="button"
-                onClick={() => onLoginSuccess("google.user@gmail.com")}
-                className="flex items-center justify-center gap-2 py-2.5 border-2 border-[#eae8e3] rounded-lg hover:bg-gray-50 active:scale-95 transition text-sm font-semibold text-gray-700"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24">
-                  <path
-                    fill="#EA4335"
-                    d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.859-3.578-7.859-8s3.53-8 7.859-8c2.46 0 4.105 1.025 5.047 1.926l3.227-3.107C18.29 1.92 15.42 1 12.24 1 6.01 1 1 5.925 1 12s5.01 11 11.24 11c6.51 0 10.84-4.505 10.84-11.025 0-.742-.08-1.309-.177-1.69H12.24z"
-                  />
-                </svg>
-                <span>Google</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onLoginSuccess("apple.user@icloud.com")}
-                className="flex items-center justify-center gap-2 py-2.5 border-2 border-[#eae8e3] rounded-lg hover:bg-gray-50 active:scale-95 transition text-sm font-semibold text-gray-700"
-              >
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.2 11.02-2.92-12.35.43-1.12.87-2.19 2.01-1.11-.1.12-.13.23-.08.35z" />
-                </svg>
-                <span>Apple</span>
-              </button>
-            </div>
-
-            <div className="text-center text-xs text-gray-400">
+            <div className="text-center mt-6 text-xs text-gray-400">
               Need assistance?{" "}
               <a href="#support" className="text-primary font-semibold hover:underline">
                 Contact Heritage Support
               </a>
             </div>
-            
+
           </div>
         </div>
       </div>
