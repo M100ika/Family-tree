@@ -7,7 +7,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import {
   Plus, Minus, Maximize2, Search, FileText, ChevronRight,
   Share2, CheckCircle, X, Sparkles, PenTool, Trash2, AlertTriangle,
-  UserPlus, Compass, Map
+  UserPlus, Compass, Map as MapIcon
 } from "lucide-react";
 import { Person, ArchiveRecord } from "../types";
 import { buildTreeLayout, CARD_W, CARD_H, H_GAP, V_STEP } from "../lib/treeLayout";
@@ -386,7 +386,7 @@ export default function MyTree({
           {/* Mini navigator (bottom-right) */}
           <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur p-3 rounded-xl shadow-lg border border-gray-200 hidden sm:block w-44 z-10">
             <div className="text-[9px] font-bold text-gray-400 mb-1 uppercase tracking-wider flex items-center gap-1">
-              <Map className="w-3 h-3 text-[#506447]" />
+              <MapIcon className="w-3 h-3 text-[#506447]" />
               <span>Canvas Navigator</span>
             </div>
             <div className="relative h-14 bg-gray-50 rounded border border-gray-100 overflow-hidden">
