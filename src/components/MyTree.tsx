@@ -28,7 +28,7 @@ interface MyTreeProps {
   records: ArchiveRecord[];
   selectedPersonId: string;
   onSelectPerson: (id: string) => void;
-  onAddPerson: (p: Person) => Promise<void>;
+  onAddPerson: (p: Person) => Promise<Person | void>;
   onUpdatePerson: (id: string, updates: Partial<Person>) => Promise<void>;
   onDeletePerson: (id: string) => Promise<void>;
   onNavigateToTab: (tab: string, personId?: string) => void;
@@ -625,11 +625,12 @@ export default function MyTree({
       setPan({ x: px + (e.clientX - mx) / zoom, y: py + (e.clientY - my) / zoom });
     }
     if (cardDragRef.current) {
-      const dx = (e.clientX - cardDragRef.current.mx) / zoom;
-      const dy = (e.clientY - cardDragRef.current.my) / zoom;
+      const drag = cardDragRef.current;
+      const dx = (e.clientX - drag.mx) / zoom;
+      const dy = (e.clientY - drag.my) / zoom;
       setManualPositions(prev => ({
         ...prev,
-        [cardDragRef.current!.id]: { x: cardDragRef.current!.baseX + dx, y: cardDragRef.current!.baseY + dy },
+        [drag.id]: { x: drag.baseX + dx, y: drag.baseY + dy },
       }));
     }
   };
@@ -659,7 +660,8 @@ export default function MyTree({
       e.preventDefault();
       const t1 = e.touches[0], t2 = e.touches[1];
       const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
-      setZoom(() => Math.max(0.3, Math.min(2.5, touchRef.current.zoom * (dist / touchRef.current.dist))));
+      const tc = touchRef.current;
+      if (tc) setZoom(() => Math.max(0.3, Math.min(2.5, tc.zoom * (dist / tc.dist))));
     } else if (e.touches.length === 1 && touchRef.current?.x && !isDraggingCard) {
       e.preventDefault();
       const t = e.touches[0];
@@ -687,9 +689,10 @@ export default function MyTree({
         added.spouseId = selectedPerson.id;
       }
     }
-    await onAddPerson(added);
+    const saved = await onAddPerson(added);
     if (selectedPerson && form.relationship === "parent") {
-      const update = form.gender === "female" ? { motherId: added.id } : { fatherId: added.id };
+      const parentId = (saved as Person | undefined)?.id ?? added.id;
+      const update = form.gender === "female" ? { motherId: parentId } : { fatherId: parentId };
       await onUpdatePerson(selectedPerson.id, update);
     }
     setIsAddingMember(false);

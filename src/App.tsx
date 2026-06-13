@@ -91,12 +91,13 @@ export default function App() {
   // Mutation handlers
   // ----------------------------------------------------------------
 
-  const handleAddPerson = async (newPerson: Person) => {
+  const handleAddPerson = async (newPerson: Person): Promise<Person | void> => {
     if (!user) return;
     try {
       const saved = await insertPerson({ ...newPerson, userId: user.id });
       setPeople(prev => [...prev, saved]);
       setSelectedPersonId(saved.id);
+      return saved;
     } catch (err) {
       console.error("Failed to add person:", err);
     }
